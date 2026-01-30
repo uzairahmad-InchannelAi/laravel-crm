@@ -2,18 +2,17 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: docker/php/DockerFile
     image: laravel-crm-app:latest
     env_file:
-      - .env  # Injected into the environment, not mounted as a file
+      - .env
+    ports:
+      - "9000:9000"
     volumes:
-      # Named volumes for persistence (avoids host permission issues)
       - crm_storage:/var/www/html/storage
       - crm_cache:/var/www/html/bootstrap/cache
-      # Mount public directory for nginx on host to serve static files
-      - ./public:/var/www/html/public:ro
-    ports:
-      - "9000:9000"  # Expose PHP-FPM for host nginx
+      - ./public:/var/www/html/public
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=9000"]
     depends_on:
       - db
       - redis
@@ -24,6 +23,8 @@ services:
     image: mysql:8.0
     env_file:
       - .env
+    ports:
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
@@ -39,7 +40,7 @@ services:
   node:
     build:
       context: .
-      dockerfile: docker/node/Dockerfile
+      dockerfile: docker/node/DockerFile
     env_file:
       - .env
     volumes:
@@ -57,7 +58,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: docker/php/DockerFile
     env_file:
       - .env
     volumes:
@@ -69,7 +70,7 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: docker/php/DockerFile
     env_file:
       - .env
     volumes:
